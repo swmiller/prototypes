@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FunctionApp1/UserUservice.csproj" />
+  <Project Path="WeatherService/WeatherService.csproj" />
+</Solution>
