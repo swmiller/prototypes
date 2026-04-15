@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
@@ -6,54 +8,184 @@ namespace ThriftMediaService.Services;
 public class MediaService : IMediaService
 {
     private readonly ILogger<MediaService> _logger;
+    private readonly IDataverseConnectionService _dataverseConnectionService;
+    private const string TableLogicalName = "thriftmedia_media";
+    private const string StoreTableLogicalName = "thriftmedia_store";
 
-    public MediaService(ILogger<MediaService> logger)
+    public MediaService(ILogger<MediaService> logger, IDataverseConnectionService dataverseConnectionService)
     {
-        _logger = logger;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _dataverseConnectionService = dataverseConnectionService ?? throw new ArgumentNullException(nameof(dataverseConnectionService));
     }
 
-    public Task<IEnumerable<Media>> GetAllMediaAsync()
+    public async Task<IEnumerable<Media>> GetAllMediaAsync()
     {
         _logger.LogInformation("Getting all media");
-        // TODO: Implement actual data access logic
-        return Task.FromResult(Enumerable.Empty<Media>());
+
+        var service = _dataverseConnectionService.GetService();
+        var query = new QueryExpression(TableLogicalName)
+        {
+            ColumnSet = GetColumnSetForMedia()
+        };
+
+        var results = await service.RetrieveMultipleAsync(query, CancellationToken.None);
+        return results.Entities.Select(MapToMedia).ToList();
     }
 
-    public Task<IEnumerable<Media>> GetMediaByStoreIdAsync(string storeId)
+    public async Task<IEnumerable<Media>> GetMediaByStoreIdAsync(string storeId)
     {
         _logger.LogInformation("Getting media for store ID: {StoreId}", storeId);
-        // TODO: Implement actual data access logic
-        return Task.FromResult(Enumerable.Empty<Media>());
+
+        var service = _dataverseConnectionService.GetService();
+        var query = new QueryExpression(TableLogicalName)
+        {
+            ColumnSet = GetColumnSetForMedia(),
+            Criteria = new FilterExpression
+            {
+                Conditions =
+                {
+                    new ConditionExpression(
+                        "thriftmedia_storeid",
+                        ConditionOperator.Equal,
+                        Guid.Parse(storeId)
+                    )
+                }
+            }
+        };
+
+        var results = await service.RetrieveMultipleAsync(query, CancellationToken.None);
+        return results.Entities.Select(MapToMedia).ToList();
     }
 
-    public Task<Media?> GetMediaByIdAsync(string id)
+    public async Task<Media?> GetMediaByIdAsync(string id)
     {
         _logger.LogInformation("Getting media with ID: {MediaId}", id);
-        // TODO: Implement actual data access logic
-        return Task.FromResult<Media?>(null);
+
+        var service = _dataverseConnectionService.GetService();
+        try
+        {
+            var entity = await service.RetrieveAsync(
+                entityName: TableLogicalName,
+                id: Guid.Parse(id),
+                columnSet: GetColumnSetForMedia(),
+                cancellationToken: CancellationToken.None
+            );
+
+            return MapToMedia(entity);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving media with ID: {MediaId}", id);
+            return null;
+        }
     }
 
-    public Task<Media> CreateMediaAsync(Media media)
+    public async Task<Media> CreateMediaAsync(Media media)
     {
         _logger.LogInformation("Creating media: {MediaTitle}", media.Title);
-        media.Id = Guid.NewGuid().ToString();
+
+        var service = _dataverseConnectionService.GetService();
+
         media.CreatedDate = DateTime.UtcNow;
-        // TODO: Implement actual data access logic
-        return Task.FromResult(media);
+        var entity = new Entity(TableLogicalName)
+        {
+            ["thriftmedia_title"] = media.Title,
+            ["thriftmedia_description"] = media.Description,
+            ["thriftmedia_mediatype"] = media.MediaType,
+            ["thriftmedia_url"] = media.Url,
+            ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
+            ["createdon"] = media.CreatedDate
+        };
+
+        var createdId = await service.CreateAsync(entity, CancellationToken.None);
+        media.Id = createdId.ToString();
+
+        return media;
     }
 
-    public Task<Media?> UpdateMediaAsync(string id, Media media)
+    public async Task<Media?> UpdateMediaAsync(string id, Media media)
     {
         _logger.LogInformation("Updating media with ID: {MediaId}", id);
-        media.ModifiedDate = DateTime.UtcNow;
-        // TODO: Implement actual data access logic
-        return Task.FromResult<Media?>(media);
+
+        var service = _dataverseConnectionService.GetService();
+
+        try
+        {
+            media.ModifiedDate = DateTime.UtcNow;
+
+            var entity = new Entity(TableLogicalName)
+            {
+                Id = Guid.Parse(id),
+                ["thriftmedia_title"] = media.Title,
+                ["thriftmedia_description"] = media.Description,
+                ["thriftmedia_mediatype"] = media.MediaType,
+                ["thriftmedia_url"] = media.Url,
+                ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
+                ["modifiedon"] = media.ModifiedDate
+            };
+
+            await service.UpdateAsync(entity, CancellationToken.None);
+            media.Id = id;
+
+            return media;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating media {MediaId}", id);
+            return null;
+        }
     }
 
-    public Task<bool> DeleteMediaAsync(string id)
+    public async Task<bool> DeleteMediaAsync(string id)
     {
         _logger.LogInformation("Deleting media with ID: {MediaId}", id);
-        // TODO: Implement actual data access logic
-        return Task.FromResult(true);
+
+        var service = _dataverseConnectionService.GetService();
+        try
+        {
+            await service.DeleteAsync(
+                entityName: TableLogicalName,
+                id: Guid.Parse(id),
+                cancellationToken: CancellationToken.None
+            );
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting media {MediaId}", id);
+            return false;
+        }
+    }
+
+    private static Media MapToMedia(Entity entity)
+    {
+        return new Media
+        {
+            Id = entity.Id.ToString(),
+            Title = entity.GetAttributeValue<string>("thriftmedia_title") ?? string.Empty,
+            Description = entity.GetAttributeValue<string>("thriftmedia_description") ?? string.Empty,
+            MediaType = entity.GetAttributeValue<string>("thriftmedia_mediatype") ?? string.Empty,
+            Url = entity.GetAttributeValue<string>("thriftmedia_url") ?? string.Empty,
+            StoreId = entity.GetAttributeValue<EntityReference>("thriftmedia_storeid")?.Id.ToString() ?? string.Empty,
+            CreatedDate = entity.GetAttributeValue<DateTime>("createdon"),
+            ModifiedDate = entity.Contains("modifiedon")
+                ? entity.GetAttributeValue<DateTime>("modifiedon")
+                : null
+        };
+    }
+
+    private static ColumnSet GetColumnSetForMedia()
+    {
+        return new ColumnSet(
+            "thriftmedia_mediaid",
+            "thriftmedia_title",
+            "thriftmedia_description",
+            "thriftmedia_mediatype",
+            "thriftmedia_url",
+            "thriftmedia_storeid",
+            "createdon",
+            "modifiedon"
+        );
     }
 }
