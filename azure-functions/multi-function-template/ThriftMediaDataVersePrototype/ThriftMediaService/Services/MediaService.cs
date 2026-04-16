@@ -91,7 +91,7 @@ public class MediaService : IMediaService
         {
             [DataverseConstants.MediaColumns.Title] = media.Title,
             [DataverseConstants.MediaColumns.Description] = media.Description,
-            [DataverseConstants.MediaColumns.MediaType] = media.MediaType,
+            [DataverseConstants.MediaColumns.MediaType] = media.MediaType.ToString(),
             [DataverseConstants.MediaColumns.Url] = media.Url,
             [DataverseConstants.MediaColumns.StoreId] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
         };
@@ -125,7 +125,7 @@ public class MediaService : IMediaService
                 Id = Guid.Parse(id),
                 [DataverseConstants.MediaColumns.Title] = media.Title,
                 [DataverseConstants.MediaColumns.Description] = media.Description,
-                [DataverseConstants.MediaColumns.MediaType] = media.MediaType,
+                [DataverseConstants.MediaColumns.MediaType] = media.MediaType.ToString(),
                 [DataverseConstants.MediaColumns.Url] = media.Url,
                 [DataverseConstants.MediaColumns.StoreId] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
             };
@@ -176,12 +176,17 @@ public class MediaService : IMediaService
 
     private static Media MapToMedia(Entity entity)
     {
+        var mediaTypeString = entity.GetAttributeValue<string>(DataverseConstants.MediaColumns.MediaType) ?? "Other";
+        var mediaType = Enum.TryParse<MediaType>(mediaTypeString, true, out var parsedType) 
+            ? parsedType 
+            : MediaType.Other;
+
         return new Media
         {
             Id = entity.Id.ToString(),
             Title = entity.GetAttributeValue<string>(DataverseConstants.MediaColumns.Title) ?? string.Empty,
             Description = entity.GetAttributeValue<string>(DataverseConstants.MediaColumns.Description) ?? string.Empty,
-            MediaType = entity.GetAttributeValue<string>(DataverseConstants.MediaColumns.MediaType) ?? string.Empty,
+            MediaType = mediaType,
             Url = entity.GetAttributeValue<string>(DataverseConstants.MediaColumns.Url) ?? string.Empty,
             StoreId = entity.GetAttributeValue<EntityReference>(DataverseConstants.MediaColumns.StoreId)?.Id.ToString() ?? string.Empty,
             CreatedDate = entity.GetAttributeValue<DateTime>(DataverseConstants.CommonColumns.CreatedOn),
