@@ -5,7 +5,6 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
-// TODO: Modify service to not handle created on and modified on fields. These are handled by Dataverse.
 // TODO: Modify column sets to use Dataverse schema names.
 // TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
 // TODO: Get rid of magic strings for column names and use constants or a mapping instead.
@@ -91,19 +90,27 @@ public class MediaService : IMediaService
 
         var service = _dataverseConnectionService.GetService();
 
-        media.CreatedDate = DateTime.UtcNow;
         var entity = new Entity(TableLogicalName)
         {
             ["cr1b3_title"] = media.Title,
             ["cr1b3_description"] = media.Description,
             ["cr1b3_mediatype"] = media.MediaType,
             ["cr1b3_url"] = media.Url,
-            ["cr1b3_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
-            ["createdon"] = media.CreatedDate
+            ["cr1b3_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
         };
 
         var createdId = await service.CreateAsync(entity, CancellationToken.None);
         media.Id = createdId.ToString();
+
+        // Retrieve the created entity to get the Dataverse-generated createdon value
+        var createdEntity = await service.RetrieveAsync(
+            entityName: TableLogicalName,
+            id: createdId,
+            columnSet: new ColumnSet("createdon"),
+            cancellationToken: CancellationToken.None
+        );
+
+        media.CreatedDate = createdEntity.GetAttributeValue<DateTime>("createdon");
 
         return media;
     }
@@ -128,7 +135,16 @@ public class MediaService : IMediaService
 
             await service.UpdateAsync(entity, CancellationToken.None);
             media.Id = id;
-            media.ModifiedDate = DateTime.UtcNow;
+
+            // Retrieve the updated entity to get the Dataverse-generated modifiedon value
+            var updatedEntity = await service.RetrieveAsync(
+                entityName: TableLogicalName,
+                id: Guid.Parse(id),
+                columnSet: new ColumnSet("modifiedon"),
+                cancellationToken: CancellationToken.None
+            );
+
+            media.ModifiedDate = updatedEntity.GetAttributeValue<DateTime>("modifiedon");
 
             return media;
         }

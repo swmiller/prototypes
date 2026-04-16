@@ -66,7 +66,6 @@ public class StoreService : IStoreService
 
         var service = _dataverseConnectionService.GetService();
 
-        store.CreatedDate = DateTime.UtcNow;
         var entity = new Entity(TableLogicalName)
         {
             ["cr1b3_storename"] = store.Name,
@@ -79,6 +78,16 @@ public class StoreService : IStoreService
 
         var createdId = await service.CreateAsync(entity, CancellationToken.None);
         store.Id = createdId.ToString();
+
+        // Retrieve the created entity to get the Dataverse-generated createdon value
+        var createdEntity = await service.RetrieveAsync(
+            entityName: TableLogicalName,
+            id: createdId,
+            columnSet: new ColumnSet("createdon"),
+            cancellationToken: CancellationToken.None
+        );
+
+        store.CreatedDate = createdEntity.GetAttributeValue<DateTime>("createdon");
 
         return store;
     }
@@ -104,7 +113,16 @@ public class StoreService : IStoreService
 
             await service.UpdateAsync(entity, CancellationToken.None);
             store.Id = id;
-            store.ModifiedDate = DateTime.UtcNow;
+
+            // Retrieve the updated entity to get the Dataverse-generated modifiedon value
+            var updatedEntity = await service.RetrieveAsync(
+                entityName: TableLogicalName,
+                id: Guid.Parse(id),
+                columnSet: new ColumnSet("modifiedon"),
+                cancellationToken: CancellationToken.None
+            );
+
+            store.ModifiedDate = updatedEntity.GetAttributeValue<DateTime>("modifiedon");
 
             return store;
         }
