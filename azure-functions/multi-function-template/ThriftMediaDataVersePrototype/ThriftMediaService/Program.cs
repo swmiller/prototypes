@@ -12,7 +12,6 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
-// TODO: Check if this should be AddSingleton or AddScoped based on the expected usage pattern of the Dataverse connection
 // Register Dataverse connection service
 builder.Services.AddSingleton<IDataverseConnectionService, DataverseConnectionService>();
 
