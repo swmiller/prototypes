@@ -8,13 +8,14 @@ namespace ThriftMediaService.Services;
 // TODO: Modify service to not handle created on and modified on fields. These are handled by Dataverse.
 // TODO: Modify column sets to use Dataverse schema names.
 // TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
+// TODO: Get rid of magic strings for column names and use constants or a mapping instead.
 
 public class MediaService : IMediaService
 {
     private readonly ILogger<MediaService> _logger;
     private readonly IDataverseConnectionService _dataverseConnectionService;
-    private const string TableLogicalName = "thriftmedia_media";
-    private const string StoreTableLogicalName = "thriftmedia_store";
+    private const string TableLogicalName = "cr1b3_media";
+    private const string StoreTableLogicalName = "cr1b3_store";
 
     public MediaService(ILogger<MediaService> logger, IDataverseConnectionService dataverseConnectionService)
     {
@@ -49,7 +50,7 @@ public class MediaService : IMediaService
                 Conditions =
                 {
                     new ConditionExpression(
-                        "thriftmedia_storeid",
+                        "cr1b3_storeid",
                         ConditionOperator.Equal,
                         Guid.Parse(storeId)
                     )
@@ -93,11 +94,11 @@ public class MediaService : IMediaService
         media.CreatedDate = DateTime.UtcNow;
         var entity = new Entity(TableLogicalName)
         {
-            ["thriftmedia_title"] = media.Title,
-            ["thriftmedia_description"] = media.Description,
-            ["thriftmedia_mediatype"] = media.MediaType,
-            ["thriftmedia_url"] = media.Url,
-            ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
+            ["cr1b3_title"] = media.Title,
+            ["cr1b3_description"] = media.Description,
+            ["cr1b3_mediatype"] = media.MediaType,
+            ["cr1b3_url"] = media.Url,
+            ["cr1b3_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
             ["createdon"] = media.CreatedDate
         };
 
@@ -118,11 +119,11 @@ public class MediaService : IMediaService
             var entity = new Entity(TableLogicalName)
             {
                 Id = Guid.Parse(id),
-                ["thriftmedia_title"] = media.Title,
-                ["thriftmedia_description"] = media.Description,
-                ["thriftmedia_mediatype"] = media.MediaType,
-                ["thriftmedia_url"] = media.Url,
-                ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
+                ["cr1b3_title"] = media.Title,
+                ["cr1b3_description"] = media.Description,
+                ["cr1b3_mediatype"] = media.MediaType,
+                ["cr1b3_url"] = media.Url,
+                ["cr1b3_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
             };
 
             await service.UpdateAsync(entity, CancellationToken.None);
@@ -165,11 +166,11 @@ public class MediaService : IMediaService
         return new Media
         {
             Id = entity.Id.ToString(),
-            Title = entity.GetAttributeValue<string>("thriftmedia_title") ?? string.Empty,
-            Description = entity.GetAttributeValue<string>("thriftmedia_description") ?? string.Empty,
-            MediaType = entity.GetAttributeValue<string>("thriftmedia_mediatype") ?? string.Empty,
-            Url = entity.GetAttributeValue<string>("thriftmedia_url") ?? string.Empty,
-            StoreId = entity.GetAttributeValue<EntityReference>("thriftmedia_storeid")?.Id.ToString() ?? string.Empty,
+            Title = entity.GetAttributeValue<string>("cr1b3_title") ?? string.Empty,
+            Description = entity.GetAttributeValue<string>("cr1b3_description") ?? string.Empty,
+            MediaType = entity.GetAttributeValue<string>("cr1b3_mediatype") ?? string.Empty,
+            Url = entity.GetAttributeValue<string>("cr1b3_url") ?? string.Empty,
+            StoreId = entity.GetAttributeValue<EntityReference>("cr1b3_storeid")?.Id.ToString() ?? string.Empty,
             CreatedDate = entity.GetAttributeValue<DateTime>("createdon"),
             ModifiedDate = entity.Contains("modifiedon")
                 ? entity.GetAttributeValue<DateTime>("modifiedon")
@@ -180,12 +181,12 @@ public class MediaService : IMediaService
     private static ColumnSet GetColumnSetForMedia()
     {
         return new ColumnSet(
-            "thriftmedia_mediaid",
-            "thriftmedia_title",
-            "thriftmedia_description",
-            "thriftmedia_mediatype",
-            "thriftmedia_url",
-            "thriftmedia_storeid",
+            "cr1b3_mediaid",
+            "cr1b3_title",
+            "cr1b3_description",
+            "cr1b3_mediatype",
+            "cr1b3_url",
+            "cr1b3_storeid",
             "createdon",
             "modifiedon"
         );

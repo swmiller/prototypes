@@ -5,15 +5,16 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
-
-
-// TODO: Modify column sets to use Dataverse schema names
 // TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
+// TODO: Check lookup of stores by id. This may not be done correctly.
+// TODO: Check the create is returning store id.
+// TODO: Get rid of magic strings for column names and use constants or a mapping instead.
+
 public class StoreService : IStoreService
 {
     private readonly ILogger<StoreService> _logger;
     private readonly IDataverseConnectionService _dataverseConnectionService;
-    private const string TableLogicalName = "thriftmedia_store";
+    private const string TableLogicalName = "cr1b3_store";
 
     public StoreService(ILogger<StoreService> logger, IDataverseConnectionService dataverseConnectionService)
     {
@@ -68,13 +69,12 @@ public class StoreService : IStoreService
         store.CreatedDate = DateTime.UtcNow;
         var entity = new Entity(TableLogicalName)
         {
-            ["thriftmedia_name"] = store.Name,
-            ["thriftmedia_address"] = store.Address,
-            ["thriftmedia_city"] = store.City,
-            ["thriftmedia_state"] = store.State,
-            ["thriftmedia_zipcode"] = store.ZipCode,
-            ["thriftmedia_phone"] = store.Phone,
-            ["createdon"] = store.CreatedDate
+            ["cr1b3_storename"] = store.Name,
+            ["cr1b3_address"] = store.Address,
+            ["cr1b3_city"] = store.City,
+            ["cr1b3_state"] = store.State,
+            ["cr1b3_zipcode"] = store.ZipCode,
+            ["cr1b3_phone"] = store.Phone
         };
 
         var createdId = await service.CreateAsync(entity, CancellationToken.None);
@@ -94,12 +94,12 @@ public class StoreService : IStoreService
             var entity = new Entity(TableLogicalName)
             {
                 Id = Guid.Parse(id),
-                ["thriftmedia_name"] = store.Name,
-                ["thriftmedia_address"] = store.Address,
-                ["thriftmedia_city"] = store.City,
-                ["thriftmedia_state"] = store.State,
-                ["thriftmedia_zipcode"] = store.ZipCode,
-                ["thriftmedia_phone"] = store.Phone
+                ["cr1b3_storename"] = store.Name,
+                ["cr1b3_address"] = store.Address,
+                ["cr1b3_city"] = store.City,
+                ["cr1b3_state"] = store.State,
+                ["cr1b3_zipcode"] = store.ZipCode,
+                ["cr1b3_phone"] = store.Phone
             };
 
             await service.UpdateAsync(entity, CancellationToken.None);
@@ -142,12 +142,12 @@ public class StoreService : IStoreService
         return new Store
         {
             Id = entity.Id.ToString(),
-            Name = entity.GetAttributeValue<string>("thriftmedia_name") ?? string.Empty,
-            Address = entity.GetAttributeValue<string>("thriftmedia_address") ?? string.Empty,
-            City = entity.GetAttributeValue<string>("thriftmedia_city") ?? string.Empty,
-            State = entity.GetAttributeValue<string>("thriftmedia_state") ?? string.Empty,
-            ZipCode = entity.GetAttributeValue<string>("thriftmedia_zipcode") ?? string.Empty,
-            Phone = entity.GetAttributeValue<string>("thriftmedia_phone") ?? string.Empty,
+            Name = entity.GetAttributeValue<string>("cr1b3_storename") ?? string.Empty,
+            Address = entity.GetAttributeValue<string>("cr1b3_address") ?? string.Empty,
+            City = entity.GetAttributeValue<string>("cr1b3_city") ?? string.Empty,
+            State = entity.GetAttributeValue<string>("cr1b3_state") ?? string.Empty,
+            ZipCode = entity.GetAttributeValue<string>("cr1b3_zipcode") ?? string.Empty,
+            Phone = entity.GetAttributeValue<string>("cr1b3_phone") ?? string.Empty,
             CreatedDate = entity.GetAttributeValue<DateTime>("createdon"),
             ModifiedDate = entity.Contains("modifiedon")
                 ? entity.GetAttributeValue<DateTime>("modifiedon")
@@ -155,16 +155,16 @@ public class StoreService : IStoreService
         };
     }
 
-private static ColumnSet GetColumnSetForStore()
+    private static ColumnSet GetColumnSetForStore()
     {
         return new ColumnSet(
-            "thriftmedia_storeid",
-            "thriftmedia_name",
-            "thriftmedia_address",
-            "thriftmedia_city",
-            "thriftmedia_state",
-            "thriftmedia_zipcode",
-            "thriftmedia_phone",
+            "cr1b3_storeid",
+            "cr1b3_storename",
+            "cr1b3_address",
+            "cr1b3_city",
+            "cr1b3_state",
+            "cr1b3_zipcode",
+            "cr1b3_phone",
             "createdon",
             "modifiedon"
         );
