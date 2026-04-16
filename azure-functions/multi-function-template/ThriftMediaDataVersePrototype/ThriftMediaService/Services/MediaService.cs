@@ -195,7 +195,6 @@ public class MediaService : IMediaService
     private static ColumnSet GetColumnSetForMedia()
     {
         return new ColumnSet(
-            "cr1b3_mediaid",
             "cr1b3_title",
             "cr1b3_description",
             "cr1b3_mediatype",

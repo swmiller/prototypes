@@ -5,7 +5,6 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
-// TODO: Check lookup of stores by id. This may not be done correctly.
 // TODO: Get rid of magic strings for column names and use constants or a mapping instead.
 
 public class StoreService : IStoreService
@@ -174,7 +173,6 @@ public class StoreService : IStoreService
     private static ColumnSet GetColumnSetForStore()
     {
         return new ColumnSet(
-            "cr1b3_storeid",
             "cr1b3_storename",
             "cr1b3_address",
             "cr1b3_city",
