@@ -5,8 +5,6 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
-// TODO: Modify column sets to use Dataverse schema names.
-// TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
 // TODO: Get rid of magic strings for column names and use constants or a mapping instead.
 
 public class MediaService : IMediaService

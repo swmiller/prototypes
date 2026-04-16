@@ -5,9 +5,7 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
-// TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
 // TODO: Check lookup of stores by id. This may not be done correctly.
-// TODO: Check the create is returning store id.
 // TODO: Get rid of magic strings for column names and use constants or a mapping instead.
 
 public class StoreService : IStoreService
