@@ -1,17 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using ThriftMediaService.Constants;
 using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
-
-// TODO: Get rid of magic strings for column names and use constants or a mapping instead.
 
 public class StoreService : IStoreService
 {
     private readonly ILogger<StoreService> _logger;
     private readonly IDataverseConnectionService _dataverseConnectionService;
-    private const string TableLogicalName = "cr1b3_store";
+    private const string TableLogicalName = DataverseConstants.Tables.Store;
 
     public StoreService(ILogger<StoreService> logger, IDataverseConnectionService dataverseConnectionService)
     {
@@ -65,12 +64,12 @@ public class StoreService : IStoreService
 
         var entity = new Entity(TableLogicalName)
         {
-            ["cr1b3_storename"] = store.Name,
-            ["cr1b3_address"] = store.Address,
-            ["cr1b3_city"] = store.City,
-            ["cr1b3_state"] = store.State,
-            ["cr1b3_zipcode"] = store.ZipCode,
-            ["cr1b3_phone"] = store.Phone
+            [DataverseConstants.StoreColumns.Name] = store.Name,
+            [DataverseConstants.StoreColumns.Address] = store.Address,
+            [DataverseConstants.StoreColumns.City] = store.City,
+            [DataverseConstants.StoreColumns.State] = store.State,
+            [DataverseConstants.StoreColumns.ZipCode] = store.ZipCode,
+            [DataverseConstants.StoreColumns.Phone] = store.Phone
         };
 
         var createdId = await service.CreateAsync(entity, CancellationToken.None);
@@ -80,11 +79,11 @@ public class StoreService : IStoreService
         var createdEntity = await service.RetrieveAsync(
             entityName: TableLogicalName,
             id: createdId,
-            columnSet: new ColumnSet("createdon"),
+            columnSet: new ColumnSet(DataverseConstants.CommonColumns.CreatedOn),
             cancellationToken: CancellationToken.None
         );
 
-        store.CreatedDate = createdEntity.GetAttributeValue<DateTime>("createdon");
+        store.CreatedDate = createdEntity.GetAttributeValue<DateTime>(DataverseConstants.CommonColumns.CreatedOn);
 
         return store;
     }
@@ -100,12 +99,12 @@ public class StoreService : IStoreService
             var entity = new Entity(TableLogicalName)
             {
                 Id = Guid.Parse(id),
-                ["cr1b3_storename"] = store.Name,
-                ["cr1b3_address"] = store.Address,
-                ["cr1b3_city"] = store.City,
-                ["cr1b3_state"] = store.State,
-                ["cr1b3_zipcode"] = store.ZipCode,
-                ["cr1b3_phone"] = store.Phone
+                [DataverseConstants.StoreColumns.Name] = store.Name,
+                [DataverseConstants.StoreColumns.Address] = store.Address,
+                [DataverseConstants.StoreColumns.City] = store.City,
+                [DataverseConstants.StoreColumns.State] = store.State,
+                [DataverseConstants.StoreColumns.ZipCode] = store.ZipCode,
+                [DataverseConstants.StoreColumns.Phone] = store.Phone
             };
 
             await service.UpdateAsync(entity, CancellationToken.None);
@@ -115,11 +114,11 @@ public class StoreService : IStoreService
             var updatedEntity = await service.RetrieveAsync(
                 entityName: TableLogicalName,
                 id: Guid.Parse(id),
-                columnSet: new ColumnSet("modifiedon"),
+                columnSet: new ColumnSet(DataverseConstants.CommonColumns.ModifiedOn),
                 cancellationToken: CancellationToken.None
             );
 
-            store.ModifiedDate = updatedEntity.GetAttributeValue<DateTime>("modifiedon");
+            store.ModifiedDate = updatedEntity.GetAttributeValue<DateTime>(DataverseConstants.CommonColumns.ModifiedOn);
 
             return store;
         }
@@ -157,15 +156,15 @@ public class StoreService : IStoreService
         return new Store
         {
             Id = entity.Id.ToString(),
-            Name = entity.GetAttributeValue<string>("cr1b3_storename") ?? string.Empty,
-            Address = entity.GetAttributeValue<string>("cr1b3_address") ?? string.Empty,
-            City = entity.GetAttributeValue<string>("cr1b3_city") ?? string.Empty,
-            State = entity.GetAttributeValue<string>("cr1b3_state") ?? string.Empty,
-            ZipCode = entity.GetAttributeValue<string>("cr1b3_zipcode") ?? string.Empty,
-            Phone = entity.GetAttributeValue<string>("cr1b3_phone") ?? string.Empty,
-            CreatedDate = entity.GetAttributeValue<DateTime>("createdon"),
-            ModifiedDate = entity.Contains("modifiedon")
-                ? entity.GetAttributeValue<DateTime>("modifiedon")
+            Name = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.Name) ?? string.Empty,
+            Address = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.Address) ?? string.Empty,
+            City = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.City) ?? string.Empty,
+            State = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.State) ?? string.Empty,
+            ZipCode = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.ZipCode) ?? string.Empty,
+            Phone = entity.GetAttributeValue<string>(DataverseConstants.StoreColumns.Phone) ?? string.Empty,
+            CreatedDate = entity.GetAttributeValue<DateTime>(DataverseConstants.CommonColumns.CreatedOn),
+            ModifiedDate = entity.Contains(DataverseConstants.CommonColumns.ModifiedOn)
+                ? entity.GetAttributeValue<DateTime>(DataverseConstants.CommonColumns.ModifiedOn)
                 : null
         };
     }
@@ -173,14 +172,14 @@ public class StoreService : IStoreService
     private static ColumnSet GetColumnSetForStore()
     {
         return new ColumnSet(
-            "cr1b3_storename",
-            "cr1b3_address",
-            "cr1b3_city",
-            "cr1b3_state",
-            "cr1b3_zipcode",
-            "cr1b3_phone",
-            "createdon",
-            "modifiedon"
+            DataverseConstants.StoreColumns.Name,
+            DataverseConstants.StoreColumns.Address,
+            DataverseConstants.StoreColumns.City,
+            DataverseConstants.StoreColumns.State,
+            DataverseConstants.StoreColumns.ZipCode,
+            DataverseConstants.StoreColumns.Phone,
+            DataverseConstants.CommonColumns.CreatedOn,
+            DataverseConstants.CommonColumns.ModifiedOn
         );
     }
 }
