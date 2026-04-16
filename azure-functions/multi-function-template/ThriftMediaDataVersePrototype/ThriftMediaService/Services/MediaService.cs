@@ -5,6 +5,10 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
+// TODO: Modify service to not handle created on and modified on fields. These are handled by Dataverse.
+// TODO: Modify column sets to use Dataverse schema names.
+// TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
+
 public class MediaService : IMediaService
 {
     private readonly ILogger<MediaService> _logger;
@@ -111,8 +115,6 @@ public class MediaService : IMediaService
 
         try
         {
-            media.ModifiedDate = DateTime.UtcNow;
-
             var entity = new Entity(TableLogicalName)
             {
                 Id = Guid.Parse(id),
@@ -120,12 +122,12 @@ public class MediaService : IMediaService
                 ["thriftmedia_description"] = media.Description,
                 ["thriftmedia_mediatype"] = media.MediaType,
                 ["thriftmedia_url"] = media.Url,
-                ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId)),
-                ["modifiedon"] = media.ModifiedDate
+                ["thriftmedia_storeid"] = new EntityReference(StoreTableLogicalName, Guid.Parse(media.StoreId))
             };
 
             await service.UpdateAsync(entity, CancellationToken.None);
             media.Id = id;
+            media.ModifiedDate = DateTime.UtcNow;
 
             return media;
         }

@@ -5,6 +5,10 @@ using ThriftMediaService.Models;
 
 namespace ThriftMediaService.Services;
 
+
+
+// TODO: Modify column sets to use Dataverse schema names
+// TODO: Don't create values for the ID column explicitly. Let Dataverse handle that.
 public class StoreService : IStoreService
 {
     private readonly ILogger<StoreService> _logger;
@@ -87,8 +91,6 @@ public class StoreService : IStoreService
 
         try
         {
-            store.ModifiedDate = DateTime.UtcNow;
-
             var entity = new Entity(TableLogicalName)
             {
                 Id = Guid.Parse(id),
@@ -97,12 +99,12 @@ public class StoreService : IStoreService
                 ["thriftmedia_city"] = store.City,
                 ["thriftmedia_state"] = store.State,
                 ["thriftmedia_zipcode"] = store.ZipCode,
-                ["thriftmedia_phone"] = store.Phone,
-                ["modifiedon"] = store.ModifiedDate
+                ["thriftmedia_phone"] = store.Phone
             };
 
             await service.UpdateAsync(entity, CancellationToken.None);
             store.Id = id;
+            store.ModifiedDate = DateTime.UtcNow;
 
             return store;
         }
