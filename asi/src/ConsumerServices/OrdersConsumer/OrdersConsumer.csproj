@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>b88ge9c6-9fb8-6de9-0d86-g3ec73967605</UserSecretsId>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.AzureServiceBus"
+                          Version="8.0.1" />
+        <PackageReference Include="Azure.Data.Tables"
+                          Version="12.9.1" />
+        <PackageReference Include="Azure.Identity"
+                          Version="1.13.1" />
+        <PackageReference Include="Azure.Messaging.ServiceBus"
+                          Version="7.18.1" />
+        <PackageReference Include="FluentValidation"
+                          Version="11.11.0" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions"
+                          Version="11.11.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting"
+                          Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore"
+                          Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http"
+                          Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime"
+                          Version="1.9.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Shared.Events\Shared.Events.csproj" />
+    </ItemGroup>
+</Project>
