@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProducerFunctions.Shared.Configuration;
 using ProducerFunctions.Shared.Services;
+using Shared.Events;
 
 namespace ProducerFunctions.Features.Customers;
 

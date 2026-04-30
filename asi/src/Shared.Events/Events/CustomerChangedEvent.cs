@@ -1,4 +1,4 @@
-namespace ProducerFunctions.Features.Customers;
+namespace Shared.Events;
 
 /// <summary>
 /// Domain event published when customer data changes in source systems.
